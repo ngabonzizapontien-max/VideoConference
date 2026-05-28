@@ -1,97 +1,225 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Ngapo — VideoConf — Actors</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>VideoConf Pro</title>
+  <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
 
-<!-- ── TOP BAR ─────────────────────────────────────────────────────────── -->
-<header class="topbar">
-  <div class="brand">📡 NGAPO Video Conference</div>
+<!-- ══════════════════════════════════════════════════════════════════════
+     AUTH SCREEN
+════════════════════════════════════════════════════════════════════════ -->
+<div id="authScreen" class="auth-screen">
+  <div class="auth-card">
+    <div class="auth-logo">📡 Ngapo VideoConference Pro</div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchAuthTab('login')">Login</button>
+      <button class="auth-tab" onclick="switchAuthTab('register')">Register</button>
+    </div>
+    <div id="authLogin">
+      <input id="loginUser" type="text"     placeholder="Username" autocomplete="username"/>
+      <input id="loginPass" type="password" placeholder="Password" autocomplete="current-password"/>
+      <button class="btn-primary full" onclick="doLogin()">Sign In</button>
+    </div>
+    <div id="authRegister" style="display:none">
+      <input id="regUser" type="text"     placeholder="Choose username"/>
+      <input id="regPass" type="password" placeholder="Choose password"/>
+      <button class="btn-primary full" onclick="doRegister()">Create Account</button>
+    </div>
+    <div id="authError" class="auth-error"></div>
+    <div class="auth-hint">Default admin: <code>admin</code> / <code>admin123</code></div>
+  </div>
+</div>
 
-  <div class="session-controls">
-    <input id="sessionIdInput" type="text" placeholder="Room ID" value="room-1" />
-    <input id="nameInput"      type="text" placeholder="Your name" />
-    <button id="btnJoin"  class="btn-primary">Join</button>
-    <button id="btnLeave" class="btn-danger">Leave</button>
+<!-- ══════════════════════════════════════════════════════════════════════
+     JOIN SCREEN
+════════════════════════════════════════════════════════════════════════ -->
+<div id="joinScreen" class="join-screen" style="display:none">
+  <div class="join-card">
+    <div class="join-logo">📡 VideoConf Pro</div>
+    <div class="join-welcome" id="joinWelcome">Welcome</div>
+    <input id="joinRoomId"   type="text"     placeholder="Room ID"       value="room-1"/>
+    <input id="joinRoomPass" type="password" placeholder="Room password (optional)"/>
+    <input id="joinRoomNewPass" type="password" placeholder="Set password for new room (optional)"/>
+    <button class="btn-primary full" onclick="doJoin()">Join Room</button>
+    <button class="btn-secondary full" id="btnAdminPanel" style="display:none" onclick="showAdminPanel()">🛡 Admin Panel</button>
+    <div id="joinError" class="auth-error"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     ADMIN PANEL MODAL
+════════════════════════════════════════════════════════════════════════ -->
+<div id="adminModal" class="modal-overlay" style="display:none">
+  <div class="modal-box">
+    <div class="modal-header">
+      🛡 Admin Panel
+      <button class="modal-close" onclick="hideAdminPanel()">✕</button>
+    </div>
+    <div class="modal-tabs">
+      <button class="modal-tab active" onclick="adminTab('sessions')">Sessions</button>
+      <button class="modal-tab" onclick="adminTab('users')">Users</button>
+    </div>
+    <div id="adminSessions" class="admin-content"></div>
+    <div id="adminUsers"    class="admin-content" style="display:none"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     MAIN CONFERENCE UI
+════════════════════════════════════════════════════════════════════════ -->
+<div id="confScreen" style="display:none">
+
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <div class="brand">📡 <span>VideoConf</span></div>
+
+    <div class="room-info">
+      <span id="roomLabel">room-1</span>
+      <span class="dot disconnected" id="statusDot"></span>
+      <span id="statusText">Not connected</span>
+    </div>
+
+    <div class="topbar-controls">
+      <button id="btnToggleAudio" class="ctrl-btn active" title="Mute/Unmute" onclick="toggleAudio()">🎤</button>
+      <button id="btnToggleVideo" class="ctrl-btn active" title="Camera on/off" onclick="toggleVideo()">📷</button>
+      <button id="btnScreen"      class="ctrl-btn"        title="Share screen"  onclick="toggleScreen()">🖥</button>
+      <button id="btnRecord"      class="ctrl-btn"        title="Record"        onclick="toggleRecord()">⏺</button>
+      <button id="btnCaption"     class="ctrl-btn"        title="Live captions" onclick="toggleCaptions()">💬</button>
+      <button class="ctrl-btn danger" title="Leave" onclick="doLeave()">📴</button>
+    </div>
+
+    <div class="peer-badge"><span id="peerCount">0</span> peers</div>
+  </header>
+
+  <!-- REACTIONS BAR -->
+  <div class="reactions-bar">
+    <span class="reaction-label">React:</span>
+    <button class="emoji-btn" onclick="sendReaction('👍')">👍</button>
+    <button class="emoji-btn" onclick="sendReaction('👏')">👏</button>
+    <button class="emoji-btn" onclick="sendReaction('❤️')">❤️</button>
+    <button class="emoji-btn" onclick="sendReaction('😂')">😂</button>
+    <button class="emoji-btn" onclick="sendReaction('🔥')">🔥</button>
+    <button class="emoji-btn" onclick="sendReaction('🎉')">🎉</button>
+    <button class="emoji-btn" onclick="sendReaction('✋')">✋</button>
+    <button class="emoji-btn" onclick="sendReaction('❓')">❓</button>
   </div>
 
-  <div class="local-controls">
-    <button id="btnToggleAudio" class="btn-ctrl">🎤 Mute</button>
-    <button id="btnToggleVideo" class="btn-ctrl">📷 Cam off</button>
+  <!-- CAPTIONS BAR -->
+  <div id="captionsBar" class="captions-bar" style="display:none">
+    <div id="captionsText" class="captions-text">Captions will appear here…</div>
   </div>
 
-  <div class="status-bar">
-    <span class="dot disconnected" id="statusDot"></span>
-    <span id="statusText">Not connected</span>
-    &nbsp;|&nbsp;
-    <span id="peerCount">0</span> peers
-  </div>
-</header>
+  <!-- FLYING REACTIONS -->
+  <div id="reactionStage" class="reaction-stage"></div>
 
-<!-- ── MAIN LAYOUT ────────────────────────────────────────────────────── -->
-<main class="layout">
+  <!-- MAIN LAYOUT -->
+  <main class="layout">
 
-  <!-- LEFT: local + remote grid -->
-  <section class="video-section">
+    <!-- VIDEO SECTION -->
+    <section class="video-section">
 
-    <!-- Local tile — click to spotlight -->
-    <div id="localWrapper" class="local-wrapper" title="Click to spotlight">
-      <video id="localVideo" autoplay muted playsinline></video>
-      <span class="peer-label local-label">You (local)</span>
-      <div class="tile-bar">
-        <button class="tile-btn" title="Spotlight" onclick="event.stopPropagation();toggleSpotlight('local')">⛶</button>
+      <!-- Local tile -->
+      <div id="localWrapper" class="local-wrapper" onclick="toggleSpotlight('local')">
+        <video id="localVideo" autoplay muted playsinline></video>
+        <div class="tile-overlay">
+          <span class="tile-name" id="localName">You</span>
+          <div class="tile-bar">
+            <button class="tile-btn" title="Spotlight" onclick="event.stopPropagation();toggleSpotlight('local')">⛶</button>
+          </div>
+        </div>
       </div>
-    </div>
 
-    <!-- Remote peers injected here -->
-    <div id="remoteGrid" class="remote-grid"></div>
-
-  </section>
-
-  <!-- RIGHT: sidebar -->
-  <aside class="sidebar">
-
-    <!-- Photo capture -->
-    <div class="panel">
-      <h3>📷 Photo Capture</h3>
-      <div class="filter-row">
-        <label>Filter:</label>
-        <select id="filterSelect">
-          <option value="none">None (raw)</option>
-          <option value="grayscale" selected>Grayscale</option>
-          <option value="sepia">Sepia</option>
-          <option value="invert">Invert</option>
-          <option value="redboost">Red Boost</option>
-          <option value="pixelate">Pixelate</option>
-        </select>
+      <!-- Screen share tile (hidden until sharing) -->
+      <div id="screenWrapper" class="screen-wrapper" style="display:none">
+        <video id="screenVideo" autoplay muted playsinline></video>
+        <span class="screen-label">🖥 You are sharing screen</span>
       </div>
-      <button id="btnCapture" class="btn-primary">📸 Take Photo & Share</button>
-      <canvas id="canvas" width="320" height="240"></canvas>
-    </div>
 
-    <!-- Gallery -->
-    <div class="panel">
-      <h3>🖼 Gallery</h3>
-      <div id="photoGallery" class="photo-gallery"></div>
-    </div>
+      <!-- Remote peers -->
+      <div id="remoteGrid" class="remote-grid"></div>
 
-    <!-- Chat -->
-    <div class="panel chat-panel">
-      <h3>💬 Chat</h3>
-      <div id="chatLog" class="chat-log"></div>
-      <div class="chat-input-row">
-        <input id="chatInput" type="text" placeholder="Message…" />
-        <button id="btnSendChat" class="btn-primary">Send</button>
+    </section>
+
+    <!-- SIDEBAR TABS -->
+    <aside class="sidebar">
+      <div class="sidebar-tabs">
+        <button class="stab active" onclick="sidebarTab('participants')">👥</button>
+        <button class="stab" onclick="sidebarTab('chat')">💬</button>
+        <button class="stab" onclick="sidebarTab('files')">📁</button>
+        <button class="stab" onclick="sidebarTab('photo')">📷</button>
+        <button class="stab" onclick="sidebarTab('transcript')">📝</button>
+        <button class="stab admin-stab" id="adminStab" style="display:none" onclick="sidebarTab('admin')">🛡</button>
       </div>
-    </div>
 
-  </aside>
+      <!-- PARTICIPANTS -->
+      <div id="tab-participants" class="stab-content">
+        <div class="panel-title">Participants</div>
+        <div id="participantList" class="participant-list"></div>
+      </div>
 
-</main>
+      <!-- CHAT -->
+      <div id="tab-chat" class="stab-content" style="display:none">
+        <div class="panel-title">Chat</div>
+        <div id="chatLog" class="chat-log"></div>
+        <div class="chat-input-row">
+          <input id="chatInput" type="text" placeholder="Message…" onkeydown="if(event.key==='Enter')sendChat()"/>
+          <button class="btn-primary" onclick="sendChat()">↑</button>
+        </div>
+      </div>
+
+      <!-- FILES -->
+      <div id="tab-files" class="stab-content" style="display:none">
+        <div class="panel-title">File Sharing</div>
+        <label class="file-upload-btn">
+          📎 Share a file
+          <input type="file" id="fileInput" style="display:none" onchange="shareFile(this)"/>
+        </label>
+        <div id="fileList" class="file-list"></div>
+      </div>
+
+      <!-- PHOTO -->
+      <div id="tab-photo" class="stab-content" style="display:none">
+        <div class="panel-title">Photo Capture</div>
+        <div class="filter-row">
+          <label>Filter:</label>
+          <select id="filterSelect">
+            <option value="none">None</option>
+            <option value="grayscale" selected>Grayscale</option>
+            <option value="sepia">Sepia</option>
+            <option value="invert">Invert</option>
+            <option value="redboost">Red Boost</option>
+            <option value="pixelate">Pixelate</option>
+          </select>
+        </div>
+        <button class="btn-primary full" onclick="captureAndProcess()">📸 Take & Share</button>
+        <canvas id="canvas" width="280" height="210"></canvas>
+        <div id="photoGallery" class="photo-gallery"></div>
+      </div>
+
+      <!-- TRANSCRIPT -->
+      <div id="tab-transcript" class="stab-content" style="display:none">
+        <div class="panel-title">AI Transcription</div>
+        <div class="transcript-controls">
+          <button class="btn-secondary" onclick="toggleCaptions()">Toggle Captions</button>
+          <button class="btn-secondary" onclick="exportTranscript()">⬇ Export</button>
+        </div>
+        <div id="transcriptLog" class="transcript-log"></div>
+      </div>
+
+      <!-- ADMIN (in-room) -->
+      <div id="tab-admin" class="stab-content" style="display:none">
+        <div class="panel-title">🛡 Admin Controls</div>
+        <button class="btn-danger full" onclick="adminMuteAll()">🔇 Mute All</button>
+        <div class="panel-title" style="margin-top:12px">Manage Participants</div>
+        <div id="adminParticipantList" class="participant-list"></div>
+      </div>
+
+    </aside>
+  </main>
+</div>
 
 <script src="app.js"></script>
 </body>
