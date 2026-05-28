@@ -125,11 +125,15 @@ async function handleSignal(msg) {
       updatePeerCount();
       break;
 
-    case 'peer_left':
+    case 'peer_left': {
+      const leavingPeer = peers.get(msg.peerId);
+      const leavingName = leavingPeer?.name || 'A peer';
       removePeer(msg.peerId);
-      addChatEvent(`A peer left`);
+      addChatEvent(`${leavingName} left the room`);
       updatePeerCount();
+      removePeerFromList(msg.peerId);
       break;
+    }
 
     case 'offer':  await handleOffer(msg); break;
 
@@ -243,14 +247,14 @@ async function createPeerConnection(peerId, peerName, isInitiator) {
     try {
       const offer = await pc.createOffer();
       await pc.setLocalDescription(offer);
-      wsSend({ type: 'offer', targetId: peerId, sdp: pc.localDescription });
+      wsSend({ type: 'offer', targetId: peerId, sdp: pc.localDescription, senderName: myName });
     } catch (e) { console.error('offer error:', e); }
   };
 
   if (isInitiator) {
     const offer = await pc.createOffer();
     await pc.setLocalDescription(offer);
-    wsSend({ type: 'offer', targetId: peerId, sdp: pc.localDescription });
+    wsSend({ type: 'offer', targetId: peerId, sdp: pc.localDescription, senderName: myName });
   }
 }
 
