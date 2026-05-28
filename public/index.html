@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VideoConf — 20 Actors</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- ── TOP BAR ─────────────────────────────────────────────────────────── -->
+<header class="topbar">
+  <div class="brand">📡 VideoConf</div>
+
+  <div class="session-controls">
+    <input id="sessionIdInput" type="text" placeholder="Room ID" value="room-1" />
+    <input id="nameInput"      type="text" placeholder="Your name" />
+    <button id="btnJoin"  class="btn-primary">Join</button>
+    <button id="btnLeave" class="btn-danger">Leave</button>
+  </div>
+
+  <div class="local-controls">
+    <button id="btnToggleAudio" class="btn-ctrl">🎤 Mute</button>
+    <button id="btnToggleVideo" class="btn-ctrl">📷 Cam off</button>
+  </div>
+
+  <div class="status-bar">
+    <span class="dot disconnected" id="statusDot"></span>
+    <span id="statusText">Not connected</span>
+    &nbsp;|&nbsp;
+    <span id="peerCount">0</span> peers
+  </div>
+</header>
+
+<!-- ── MAIN LAYOUT ────────────────────────────────────────────────────── -->
+<main class="layout">
+
+  <!-- LEFT: local + remote grid -->
+  <section class="video-section">
+
+    <!-- Local tile — click to spotlight -->
+    <div id="localWrapper" class="local-wrapper" title="Click to spotlight">
+      <video id="localVideo" autoplay muted playsinline></video>
+      <span class="peer-label local-label">You (local)</span>
+      <div class="tile-bar">
+        <button class="tile-btn" title="Spotlight" onclick="event.stopPropagation();toggleSpotlight('local')">⛶</button>
+      </div>
+    </div>
+
+    <!-- Remote peers injected here -->
+    <div id="remoteGrid" class="remote-grid"></div>
+
+  </section>
+
+  <!-- RIGHT: sidebar -->
+  <aside class="sidebar">
+
+    <!-- Photo capture -->
+    <div class="panel">
+      <h3>📷 Photo Capture</h3>
+      <div class="filter-row">
+        <label>Filter:</label>
+        <select id="filterSelect">
+          <option value="none">None (raw)</option>
+          <option value="grayscale" selected>Grayscale</option>
+          <option value="sepia">Sepia</option>
+          <option value="invert">Invert</option>
+          <option value="redboost">Red Boost</option>
+          <option value="pixelate">Pixelate</option>
+        </select>
+      </div>
+      <button id="btnCapture" class="btn-primary">📸 Take Photo & Share</button>
+      <canvas id="canvas" width="320" height="240"></canvas>
+    </div>
+
+    <!-- Gallery -->
+    <div class="panel">
+      <h3>🖼 Gallery</h3>
+      <div id="photoGallery" class="photo-gallery"></div>
+    </div>
+
+    <!-- Chat -->
+    <div class="panel chat-panel">
+      <h3>💬 Chat</h3>
+      <div id="chatLog" class="chat-log"></div>
+      <div class="chat-input-row">
+        <input id="chatInput" type="text" placeholder="Message…" />
+        <button id="btnSendChat" class="btn-primary">Send</button>
+      </div>
+    </div>
+
+  </aside>
+
+</main>
+
+<script src="app.js"></script>
+</body>
+</html>
